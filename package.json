@@ -1,0 +1,33 @@
+{
+  "name": "atelier-webos",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "build": "node scripts/build-desktop.mjs && node scripts/build-engine.mjs",
+    "start": "node server.mjs",
+    "dev": "npm run build && npm start",
+    "test": "node scripts/build-desktop.mjs && node tests.mjs && node tests-cloud.mjs && node tests-documents.mjs && node tests-git-proxy.mjs && node tests-browser-relay.mjs && node tests-browser-engine.mjs"
+  },
+  "devDependencies": {
+    "@isomorphic-git/lightning-fs": "4.10.5",
+    "@mercuryworkshop/bare-mux": "2.1.9",
+    "@mercuryworkshop/scramjet": "1.1.0",
+    "@web-ppt/core": "0.6.0",
+    "@web-ppt/viewer-core": "0.6.0",
+    "buffer": "6.0.3",
+    "docx-preview": "0.3.7",
+    "dompurify": "3.4.17",
+    "esbuild": "0.28.2",
+    "fabric": "6.9.1",
+    "fake-indexeddb": "6.2.7",
+    "isomorphic-git": "1.44.10",
+    "jsdom": "26.1.0",
+    "jszip": "3.10.2",
+    "pdfjs-dist": "5.7.284",
+    "pyodide": "314.0.7"
+  }
+}

@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {gitProxy} from './lib/git-proxy.mjs';
+const request=(url,headers={},method='GET')=>new Request('https://atelier.test/api/git?url='+encodeURIComponent(url),{method,headers:{'x-atelier-user-id':'fixture',...headers}});
+assert.equal((await gitProxy(new Request('https://atelier.test/api/git'))).status,401);
+for(const url of ['http://github.com/a/b/info/refs?service=git-upload-pack','https://127.0.0.1/a/b/info/refs?service=git-upload-pack','https://github.com/settings','https://github.com.evil.test/a/b/info/refs?service=git-upload-pack'])assert.notEqual((await gitProxy(request(url))).status,200);
+assert.equal((await gitProxy(request('https://github.com/a/b/info/refs?service=git-upload-pack',{origin:'https://other.test'}))).status,403);
+let called;const res=await gitProxy(request('https://github.com/a/b.git/info/refs?service=git-upload-pack',{'x-git-authorization':'Basic YTpi'}),async(url,options)=>{called={url,options};return new Response('001e# service=git-upload-pack\n',{headers:{'content-type':'application/x-git-upload-pack-advertisement'}})});
+assert.equal(res.status,200);assert.equal(called.options.headers.get('authorization'),'Basic YTpi');assert.equal(called.options.redirect,'manual');assert.equal(called.options.headers.get('x-atelier-user-id'),null);
+assert.equal((await gitProxy(request('https://github.com/a/b/info/refs?service=git-upload-pack'),async()=>new Response(null,{status:302,headers:{location:'https://example.com'}}))).status,400);
+console.log('PASS Git transport authentication, host restrictions, credential forwarding and redirect rejection');

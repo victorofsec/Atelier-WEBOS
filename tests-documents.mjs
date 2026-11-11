@@ -1,0 +1,28 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import {JSDOM} from 'jsdom';
+import JSZip from 'jszip';
+const dom=new JSDOM('<!doctype html><div id="doc"></div>');
+Object.assign(globalThis,{window:dom.window,document:dom.window.document,DOMParser:dom.window.DOMParser,XMLSerializer:dom.window.XMLSerializer,Node:dom.window.Node,HTMLElement:dom.window.HTMLElement});
+const docx=new JSZip();
+docx.file('[Content_Types].xml','<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+docx.file('_rels/.rels','<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+docx.file('word/document.xml','<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>Atelier document fixture</w:t></w:r></w:p><w:sectPr><w:pgSz w:w="12240" w:h="15840"/></w:sectPr></w:body></w:document>');
+const {renderAsync}=await import('docx-preview');
+await renderAsync(await docx.generateAsync({type:'uint8array'}),document.querySelector('#doc'),undefined,{renderAltChunks:false});
+assert.match(document.querySelector('#doc').textContent,/Atelier document fixture/);console.log('PASS DOCX content renders through docx-preview');
+const pptx=new JSZip();
+pptx.file('[Content_Types].xml','<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/><Override PartName="/ppt/slides/slide1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/></Types>');
+pptx.file('_rels/.rels','<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="ppt/presentation.xml"/></Relationships>');
+pptx.file('ppt/presentation.xml','<p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><p:sldIdLst><p:sldId id="256" r:id="rId1"/></p:sldIdLst><p:sldSz cx="9144000" cy="6858000"/></p:presentation>');
+pptx.file('ppt/_rels/presentation.xml.rels','<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="slides/slide1.xml"/></Relationships>');
+pptx.file('ppt/slides/slide1.xml','<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/><p:sp><p:nvSpPr><p:cNvPr id="2" name="Rectangle"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="914400" y="914400"/><a:ext cx="1828800" cy="914400"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="3478F6"/></a:solidFill></p:spPr></p:sp></p:spTree></p:cSld></p:sld>');
+const ppt=await import('@web-ppt/core');const presentation=await ppt.parse(await pptx.generateAsync({type:'uint8array'}));assert.equal(presentation.slides.length,1);assert.ok(presentation.slides[0].elements.length>0);const svg=await ppt.slideToSvgFile(presentation,presentation.slides[0]);assert.match(svg,/<svg/);console.log('PASS PPTX parses and produces SVG using Web-PPT');
+const objects=['<< /Type /Catalog /Pages 2 0 R >>','<< /Type /Pages /Kids [3 0 R] /Count 1 >>','<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 400] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>','<< /Length 52 >>\nstream\nBT /F1 18 Tf 20 350 Td (Atelier PDF fixture) Tj ET\nendstream','<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'];
+let pdf='%PDF-1.4\n',offsets=[0];for(let i=0;i<objects.length;i++){offsets.push(pdf.length);pdf+=(i+1)+' 0 obj\n'+objects[i]+'\nendobj\n'}const xref=pdf.length;pdf+='xref\n0 6\n0000000000 65535 f \n'+offsets.slice(1).map(n=>String(n).padStart(10,'0')+' 00000 n \n').join('')+'trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF';
+const pdfjs=await import('pdfjs-dist/legacy/build/pdf.mjs');const parsed=await pdfjs.getDocument({data:new TextEncoder().encode(pdf),useSystemFonts:true}).promise;assert.equal(parsed.numPages,1);assert.match((await (await parsed.getPage(1)).getTextContent()).items.map(i=>i.str).join(''),/Atelier PDF fixture/);await parsed.destroy();console.log('PASS PDF parses and extracts text using PDF.js');
+const git=(await import('isomorphic-git')).default;const nativeFs=await import('node:fs');const dir=await fs.mkdtemp(path.join(os.tmpdir(),'atelier-git-test-'));await git.init({fs:nativeFs,dir,defaultBranch:'main'});await fs.writeFile(path.join(dir,'hello.txt'),'Hello');await git.add({fs:nativeFs,dir,filepath:'hello.txt'});await git.commit({fs:nativeFs,dir,message:'Fixture commit',author:{name:'Test',email:'test@example.invalid'}});assert.equal((await git.log({fs:nativeFs,dir}))[0].commit.message.trim(),'Fixture commit');console.log('PASS Git initialization, staging, commit and history');
+// Temporary fixture directory is intentionally retained for inspection.
+dom.window.close();

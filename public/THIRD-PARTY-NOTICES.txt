@@ -1,0 +1,29 @@
+MIT License
+
+Copyright (c) 2026 Likhith SP
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+The Music interface adapts the MIT-licensed MusicApp by Likhith SP.
+Apple application artwork belongs to its respective owner and is used for visual simulation. Most icons are sourced from support.apple.com; Finder, Launchpad and Trash artwork follow the reference project assets.
+Music metadata, cover artwork and promotional previews are supplied by the Apple iTunes catalog. Billie Jean is included from the audio file supplied by the user for this private site; it was not downloaded from a third-party source.
+Landscape photography: Unsplash photo-1470770841072-f978cf4d019e, photo-1518837695005-2083093ee35b, photo-1448375240586-882707db888b, photo-1509316785289-025f5b846b35, photo-1464822759023-fed622ff2c3b.
+
+App Store icon: Apple Support official asset https://ipcdn-web.apple.com/assets/v2/web/65807228-4724-42da-bc37-bce0b2693c2d

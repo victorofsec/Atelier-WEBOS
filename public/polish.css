@@ -1,0 +1,14 @@
+/* Translucent surfaces keep the wallpaper visible in both appearances. */
+:root{--menu-glass:rgba(238,243,247,.55);--menu-edge:rgba(255,255,255,.64);--menu-shadow:0 14px 44px #10202c29,inset 0 1px 0 #ffffff80}
+body.dark{--menu-glass:rgba(32,38,46,.53);--menu-edge:rgba(255,255,255,.2);--menu-shadow:0 16px 46px #0005,inset 0 1px 0 #ffffff1a}
+body .popover,body.dark .popover,body #control{background:var(--menu-glass);backdrop-filter:blur(28px) saturate(165%);-webkit-backdrop-filter:blur(28px) saturate(165%);border:1px solid var(--menu-edge);box-shadow:var(--menu-shadow)}
+body #menubar,body.dark #menubar{background:rgba(228,237,243,.28);backdrop-filter:blur(24px) saturate(165%);-webkit-backdrop-filter:blur(24px) saturate(165%);border-bottom:1px solid #ffffff24}
+body.dark #menubar{background:rgba(24,31,39,.32)}
+#context button:not(:hover){background:transparent}#control .cc-tile{background:#ffffff1f}.dark #control .cc-tile{background:#ffffff0b}
+#dock .dock-art{transition:none!important;will-change:transform}#dock .dock-item{will-change:transform}#dock .dock-item:hover .dock-art,#dock .dock-item:has(+.dock-item:hover) .dock-art,#dock .dock-item:hover+.dock-item .dock-art{transform:none}
+#dock .dock-launching .dock-art>img,#dock .dock-launching .dock-art>.utility-icon{animation:dock-launch 500ms cubic-bezier(.2,.7,.2,1)}
+@keyframes dock-launch{0%,100%{translate:0 0}36%{translate:0 -16px}64%{translate:0 -3px}80%{translate:0 -6px}}
+#boot-screen{position:fixed;inset:0;z-index:100000;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 35%,#263d4d,#0c141d 75%);color:#edf5fa}
+.boot-card{text-align:center;width:250px}.boot-symbol{width:56px;height:56px;margin:0 auto 30px;border:1px solid #ffffff80;border-radius:16px;display:grid;place-items:center;box-shadow:0 0 70px #8ec5e225;background:#ffffff0b;font-size:28px}.boot-card h1{font-size:22px;letter-spacing:3px;font-weight:450;margin-bottom:32px}.boot-card p{font-size:12px;color:#b8c9d5;min-height:32px;line-height:1.5}.boot-card progress{display:block;appearance:none;border:0;width:160px;height:4px;margin:0 auto 20px;border-radius:10px;overflow:hidden;background:#ffffff1a}.boot-card progress::-webkit-progress-bar{background:#ffffff1a}.boot-card progress::-webkit-progress-value{background:#dfedf7;border-radius:10px;transition:width 250ms ease}.boot-card progress::-moz-progress-bar{background:#dfedf7}.boot-card button{color:#fff;background:#ffffff20;padding:8px 16px;border-radius:9px}body.booting #desktop{visibility:hidden}
+@media(prefers-reduced-motion:reduce){#dock .dock-launching .dock-art>*{animation:none}.boot-card progress::-webkit-progress-value{transition:none}}
+@supports not (backdrop-filter:blur(1px)){body .popover,body #control{background:#e8edf3}body.dark .popover,body.dark #control{background:#292f38}}

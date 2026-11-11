@@ -1,0 +1,8 @@
+node_modules/
+public/vendor/
+public/app.js
+public/OPEN-SOURCE-LICENSES.txt
+browser-engine/dist/
+.data/
+.env
+*.log
