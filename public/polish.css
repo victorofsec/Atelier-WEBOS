@@ -23,3 +23,7 @@ body.dark #dock::before{background:rgba(26,32,41,.26);border-color:#ffffff30}
 .account-link{display:inline-block;padding:7px 12px;border-radius:8px;background:#007aff;color:white;text-decoration:none;font-size:12px}
 
 #dock{--dock-size:clamp(18px,calc((100vw - 70px)/(var(--dock-count,14)*1.32 + 3.5)),48px)}
+
+/* Override the older dark-panel selector as well as the shared popover. */
+body.dark #control{background:rgba(22,28,36,.16);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);box-shadow:0 12px 32px #0003,inset 0 1px #ffffff15}
+body.dark #control .cc-tile,body.dark #control .cc-panel{background:#ffffff08;border-color:#ffffff12}
