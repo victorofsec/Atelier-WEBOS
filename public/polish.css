@@ -27,3 +27,6 @@ body.dark #dock::before{background:rgba(26,32,41,.26);border-color:#ffffff30}
 /* Override the older dark-panel selector as well as the shared popover. */
 body.dark #control{background:rgba(22,28,36,.16);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);box-shadow:0 12px 32px #0003,inset 0 1px #ffffff15}
 body.dark #control .cc-tile,body.dark #control .cc-panel{background:#ffffff08;border-color:#ffffff12}
+
+/* Share the desktop stacking context, below windows and the Dock. */
+#desktop > .desktop-selection{z-index:1}

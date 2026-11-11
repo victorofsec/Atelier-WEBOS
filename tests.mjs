@@ -59,6 +59,7 @@ check('Marquee selects intersecting files only',()=>{
  const down=pointer('pointerdown',10,10);Object.defineProperty(down,'target',{value:area});area.onpointerdown(down);area.dispatchEvent(pointer('pointermove',140,140));area.dispatchEvent(pointer('pointerup',140,140));
  assert.equal(run('b.selection.size'),1);assert.equal(cards[0].getAttribute('aria-selected'),'true');
 });
+check('Desktop selection stays in the desktop layer below the Dock',()=>{const area=window.document.querySelector('#desktop-files');const event=new window.MouseEvent('pointerdown',{bubbles:true,cancelable:true,button:0,clientX:20,clientY:80});Object.defineProperty(event,'target',{value:area});area.onpointerdown(event);const box=window.document.querySelector('.desktop-selection');assert.equal(box.parentElement.id,'desktop');assert.equal(window.document.body.querySelector(':scope > .selection-box'),null);area.dispatchEvent(new window.MouseEvent('pointerup',{bubbles:true}));assert.equal(window.document.querySelector('.desktop-selection'),null)});
 check('Desktop grid coordinates persist after re-render',()=>{
  const area=window.document.querySelector('#desktop-files');area.getBoundingClientRect=()=>({left:10,top:39,width:1200,height:650});
  run("files.push({id:'position-test',name:'Position.txt',type:'text',parent:'desktop',content:'',modified:Date.now()});assignDesktopPositions(['position-test'],{x:650,y:220});renderDesktop()");
