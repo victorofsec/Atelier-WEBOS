@@ -1,5 +1,15 @@
 # Atelier
 
+![Atelier project overview](docs/atelier-overview.jpg)
+
+**[Open Atelier](https://atelier-desktop-vicpi.bettyrossin.chatgpt.site)** | [Report an issue](https://github.com/victorofsec/Atelier-WEBOS/issues)
+
+Explore without an account. Sign in from **Settings > Account & Storage** for a separate personal cloud workspace. Guest sessions are temporary.
+
+![Guest sessions and personal cloud workspaces](docs/guest-and-cloud.png)
+
+*Presentation visuals showing the applications and access modes; not browser screenshots.*
+
 A desktop environment in your browser, with movable windows, a magnifying Dock, an independent lock screen, translucent menus and persistent files.
 
 ## Run locally

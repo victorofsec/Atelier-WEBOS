@@ -6,8 +6,8 @@ function installDockMotion(){
  const tick=now=>{frame=0;const dt=Math.min((now-last)/1000,.025)||1/60;last=now;let moving=false;
   const reduced=!motionDuration(100);const base=dock.getBoundingClientRect().left;
   for(const item of items){const distance=pointer===null?1:Math.min(1,Math.abs(pointer-base-item.center)/(item.size*2.6));const target=reduced?1:1+.52*(1+Math.cos(Math.PI*distance))/2;if(reduced){item.scale=1;item.velocity=0}item.velocity+=(target-item.scale)*220*dt;item.velocity*=Math.exp(-25*dt);item.scale+=item.velocity*dt;if(Math.abs(target-item.scale)<.001&&Math.abs(item.velocity)<.005){item.scale=target;item.velocity=0}else moving=true;}
-  const extra=items.map(item=>Math.max(0,item.scale-1)*item.size*.8);let shift=-extra.reduce((a,b)=>a+b,0)/2;
-  items.forEach((item,i)=>{item.el.style.transform='translate3d('+(shift+extra[i]/2).toFixed(2)+'px,0,0)';item.art.style.transform='translate3d(0,'+(-(item.scale-1)*16).toFixed(2)+'px,0) scale('+item.scale.toFixed(4)+')';shift+=extra[i]});
+  const extra=items.map(item=>Math.max(0,item.scale-1)*item.size);const expansion=extra.reduce((a,b)=>a+b,0);let shift=-expansion/2;dock.style.setProperty('--dock-expansion',expansion.toFixed(2)+'px');dock.style.setProperty('--dock-rise',(Math.max(0,...items.map(item=>(item.scale-1)*item.size))*.3).toFixed(2)+'px');
+  items.forEach((item,i)=>{item.el.style.transform='translate3d('+(shift+extra[i]/2).toFixed(2)+'px,0,0)';item.art.style.transform='translate3d(0,'+(-(item.scale-1)*16).toFixed(2)+'px,0) scale('+item.scale.toFixed(4)+')';item.el.style.setProperty('--label-bottom',(item.art.offsetHeight*item.scale+(item.scale-1)*16+24).toFixed(2)+'px');shift+=extra[i]});
   if(moving)wake();
  };
  dock.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;pointer=e.clientX;wake()});dock.addEventListener('pointerleave',()=>{pointer=null;wake()});

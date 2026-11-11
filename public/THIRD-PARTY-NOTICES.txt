@@ -23,7 +23,7 @@ SOFTWARE.
 
 The Music interface adapts the MIT-licensed MusicApp by Likhith SP.
 Apple application artwork belongs to its respective owner and is used for visual simulation. Most icons are sourced from support.apple.com; Finder, Launchpad and Trash artwork follow the reference project assets.
-Music metadata, cover artwork and promotional previews are supplied by the Apple iTunes catalog. Billie Jean is included from the audio file supplied by the user for this private site; it was not downloaded from a third-party source.
+Music metadata, cover artwork and promotional previews are supplied by the Apple iTunes catalog. Personal imported audio is not part of the public distribution.
 Landscape photography: Unsplash photo-1470770841072-f978cf4d019e, photo-1518837695005-2083093ee35b, photo-1448375240586-882707db888b, photo-1509316785289-025f5b846b35, photo-1464822759023-fed622ff2c3b.
 
 App Store icon: Apple Support official asset https://ipcdn-web.apple.com/assets/v2/web/65807228-4724-42da-bc37-bce0b2693c2d
