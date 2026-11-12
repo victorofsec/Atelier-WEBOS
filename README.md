@@ -1,6 +1,6 @@
 # Atelier
 
-![Atelier project overview](docs/atelier-overview.jpg)
+![Atelier desktop in light mode](docs/desktop-light.png)
 
 **[Open Atelier](https://atelier-desktop-vicpi.bettyrossin.chatgpt.site)** | [Report an issue](https://github.com/victorofsec/Atelier-WEBOS/issues)
 
@@ -8,9 +8,11 @@ The free custom address `atelier.v6.rocks` is currently unavailable. The **Open 
 
 Explore without an account. Sign in from **Settings > Account & Storage** for a separate personal cloud workspace. Guest sessions are temporary. A first-run setup offers appearance, wallpapers, accent colors and motion preferences. Cloud access is currently invitation-only on the hosted instance.
 
-![Guest sessions and personal cloud workspaces](docs/guest-and-cloud.png)
+### Dark appearance
 
-*Presentation visuals showing the applications and access modes; not browser screenshots.*
+![Atelier desktop in dark mode](docs/desktop-dark.png)
+
+*Actual desktop screenshots in light and dark appearance.*
 
 A desktop environment in your browser, with movable windows, a magnifying Dock, an independent lock screen, translucent menus and persistent files.
 
