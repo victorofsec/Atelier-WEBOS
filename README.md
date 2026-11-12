@@ -4,7 +4,9 @@
 
 **[Open Atelier](https://atelier-desktop-vicpi.bettyrossin.chatgpt.site)** | [Report an issue](https://github.com/victorofsec/Atelier-WEBOS/issues)
 
-Explore without an account. Sign in from **Settings > Account & Storage** for a separate personal cloud workspace. Guest sessions are temporary.
+The free custom address `atelier.v6.rocks` is currently unavailable. The **Open Atelier** link above remains the working hosted address.
+
+Explore without an account. Sign in from **Settings > Account & Storage** for a separate personal cloud workspace. Guest sessions are temporary. A first-run setup offers appearance, wallpapers, accent colors and motion preferences. Cloud access is currently invitation-only on the hosted instance.
 
 ![Guest sessions and personal cloud workspaces](docs/guest-and-cloud.png)
 

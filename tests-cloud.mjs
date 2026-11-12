@@ -39,3 +39,10 @@ assert.equal((await cloudState(modernRequest({baseRevision:createdRevision,state
 assert.equal((await cloudState(modernRequest(null),modernBucket)).status,400);
 const legacyBucket=new Bucket();assert.equal((await cloudState(request('legacy','PUT',snapshot,'W/"new"'),legacyBucket)).status,200);
 console.log('JSON revisions survive rewritten headers; stale writes are rejected; legacy W/new creates correctly.');
+
+const accessModule=await import('./lib/cloud-state.mjs');
+const uninvited=new Request('https://atelier.example/api/state',{headers:{'x-atelier-user-id':'uninvited','x-atelier-user-email':'outside@example.invalid'}});
+assert.equal((await accessModule.cloudState(uninvited,null,'invited@example.invalid')).status,403);
+assert.equal((await accessModule.cloudBlob(uninvited,null,'a'.repeat(64),'invited@example.invalid')).status,403);
+assert.equal(accessModule.cloudAccess(new Request('https://atelier.example/api/state',{headers:{'x-atelier-user-id':'invited','x-atelier-user-email':'INVITED@example.invalid'}}),'invited@example.invalid'),null);
+console.log('PASS invited accounts: state and files enforce trusted identity allowlist');

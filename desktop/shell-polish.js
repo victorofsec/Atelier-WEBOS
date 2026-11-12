@@ -20,6 +20,6 @@ function bootStage(label,value){const overlay=$('#boot-screen');if(!overlay)retu
 const bootDesktop=boot;
 boot=async function(){
  const overlay=$('#boot-screen');document.body.classList.add('booting');bootStage('Preparing your desktop…',0);
- try{await bootDesktop();installDockMotion();bootStage('Ready',4);document.body.classList.remove('booting');if(overlay){await overlay.animate([{opacity:1},{opacity:0}],{duration:motionDuration(220),easing:'ease-out'}).finished;overlay.remove()}}
+ try{await bootDesktop();installDockMotion();bootStage('Ready',4);document.body.classList.remove('booting');if(overlay){await overlay.animate([{opacity:1},{opacity:0}],{duration:motionDuration(220),easing:'ease-out'}).finished;overlay.remove()}showWelcome()}
  catch(error){bootStage('Unable to finish starting. Reload to try again.',0);const retry=overlay?.querySelector('[data-boot-retry]');if(retry){retry.hidden=false;retry.onclick=()=>location.reload()}console.error('Desktop startup failed',error)}
 };

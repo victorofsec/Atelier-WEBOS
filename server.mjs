@@ -25,9 +25,10 @@ function serve(port,directory,api=false){
  http.createServer(async(req,res)=>{try{
   if(!['127.0.0.1:'+port,'localhost:'+port].includes(req.headers.host)){res.writeHead(403);res.end('Invalid host');return}
   const url=new URL(req.url,'http://'+req.headers.host);
+  if(api&&['/account/sign-in','/account/sign-out'].includes(url.pathname)){res.writeHead(303,{'Location':'/desktop','Set-Cookie':'atelier-local-guest='+(url.pathname.endsWith('sign-out')?'1':'')+'; Path=/; HttpOnly; SameSite=Lax'+(url.pathname.endsWith('sign-in')?'; Max-Age=0':''),'Cache-Control':'no-store'});res.end();return}
   if(api&&url.pathname.startsWith('/api/')){
    const headers=new Headers();for(const [key,value]of Object.entries(req.headers))if(value!==undefined&&!key.startsWith('x-atelier-user-'))headers.set(key,Array.isArray(value)?value.join(', '):value);
-   headers.set('x-atelier-user-id','local');headers.set('x-atelier-user-email','local@atelier.invalid');
+   if(!/(?:^|;\s*)atelier-local-guest=1(?:;|$)/.test(req.headers.cookie||'')){headers.set('x-atelier-user-id','local');headers.set('x-atelier-user-email','local@atelier.invalid');}
    const chunks=[];let bytes=0;for await(const chunk of req){bytes+=chunk.length;if(bytes>48*1024*1024){res.writeHead(413);res.end('Request too large');return}chunks.push(chunk)}
    const body=Buffer.concat(chunks);if(body.length)headers.set('content-length',String(body.length));
    const request=new Request(url,{method:req.method,headers,body:['GET','HEAD'].includes(req.method)?undefined:body});
