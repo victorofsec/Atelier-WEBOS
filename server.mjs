@@ -5,6 +5,7 @@ import {fileURLToPath} from 'node:url';
 import {createHash,randomUUID} from 'node:crypto';
 import {Readable} from 'node:stream';
 import {cloudState,cloudBlob} from './lib/cloud-state.mjs';
+import {workspaceSecurity} from './lib/workspace-lock.mjs';
 import {gitProxy} from './lib/git-proxy.mjs';
 import {browserRelay} from './lib/browser-relay.mjs';
 const here=path.dirname(fileURLToPath(import.meta.url)),dataDir=path.join(here,'.data');
@@ -32,7 +33,7 @@ function serve(port,directory,api=false){
    const chunks=[];let bytes=0;for await(const chunk of req){bytes+=chunk.length;if(bytes>48*1024*1024){res.writeHead(413);res.end('Request too large');return}chunks.push(chunk)}
    const body=Buffer.concat(chunks);if(body.length)headers.set('content-length',String(body.length));
    const request=new Request(url,{method:req.method,headers,body:['GET','HEAD'].includes(req.method)?undefined:body});
-   let result;if(url.pathname==='/api/state')result=await cloudState(request,bucket);else if(url.pathname.startsWith('/api/blob/'))result=await cloudBlob(request,bucket,url.pathname.slice(10));else if(url.pathname==='/api/git')result=await gitProxy(request);else if(url.pathname==='/api/browser-relay')result=await browserRelay(request);else result=new Response('Not found',{status:404});
+   let result;if(url.pathname==='/api/security')result=await workspaceSecurity(request,bucket,headers.get('x-atelier-user-id'));else if(url.pathname==='/api/state')result=await cloudState(request,bucket);else if(url.pathname.startsWith('/api/blob/'))result=await cloudBlob(request,bucket,url.pathname.slice(10));else if(url.pathname==='/api/git')result=await gitProxy(request);else if(url.pathname==='/api/browser-relay')result=await browserRelay(request);else result=new Response('Not found',{status:404});
    res.writeHead(result.status,Object.fromEntries(result.headers));if(result.body)Readable.fromWeb(result.body).pipe(res);else res.end();return;
   }
   let name=decodeURIComponent(url.pathname);if(name==='/'||name==='/desktop')name=api?'/desktop.html':'/index.html';

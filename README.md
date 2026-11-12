@@ -39,6 +39,14 @@ Open **http://127.0.0.1:5173**. The isolated browser engine runs on port **5174*
 
 The music catalog links to preview recordings. Personal full-length audio and account data are not included. Import your own files through File Explorer.
 
+## Workspace controls
+
+Settings has searchable categories for appearance, wallpapers, the Dock, sound, storage and privacy. Drag windows to screen edges or corners to preview a glass tile, then release to snap. Alt + Caps Lock switches windows with animated selection.
+
+Drag apps, files and folders into the Dock, rearrange them, or remove their pins without deleting the originals. Drag a Dock app onto the desktop to create a movable shortcut.
+
+Signed-in workspace lock codes are salted and hashed on the server. Locked sessions cannot read or write cloud snapshots or files; unlock grants a short-lived HttpOnly cookie. Existing plaintext codes migrate automatically. Guest locking is a temporary visual convenience only. This is not end-to-end encryption and does not protect an already unlocked browser from someone controlling that browser.
+
 ## Browser
 
 Scramjet renders rewritten pages on a separate origin. The desktop supplies an authenticated HTTP transport; scripts never share the desktop origin. The transport normalizes proxy URLs, compresses transfers, coalesces DNS lookups and caches explicitly reusable static assets. Local HTML documents use a sanitized reader.
@@ -47,7 +55,7 @@ This is an experimental browser. Anti-bot checks, certain sign-in flows, DRM and
 
 ## Storage and deployment
 
-The local server persists the local account under `.data/`, excluded from Git. IndexedDB buffers pending changes. Conflicting edits retain both versions. This local development account is **not a public authentication system**.
+The local server persists the local account under `.data/`, excluded from Git. New pending changes stay in memory until the cloud confirms the save. Legacy IndexedDB snapshots are removed after successful synchronization. Keep the page open until pending saves finish. Conflicting edits retain both versions. This local development account is **not a public authentication system**.
 
 The backend functions in `lib/` accept a trusted identity and a bucket-like storage adapter. For a hosted multi-user installation, provide real authentication, overwrite the trusted identity headers server-side, and use durable storage with atomic conditional writes. Keep the browser engine on a separate origin, update both origin constants, and enforce public-only outbound networking for the relay. Do not expose the local development server to the Internet.
 

@@ -10,7 +10,7 @@
     "build": "node scripts/build-desktop.mjs && node scripts/build-engine.mjs",
     "start": "node server.mjs",
     "dev": "npm run build && npm start",
-    "test": "node scripts/build-desktop.mjs && node tests.mjs && node tests-cloud.mjs && node tests-documents.mjs && node tests-git-proxy.mjs && node tests-browser-relay.mjs && node tests-browser-engine.mjs"
+    "test": "node scripts/build-desktop.mjs && node tests.mjs && node tests-cloud.mjs && node tests-security.mjs && node tests-documents.mjs && node tests-git-proxy.mjs && node tests-browser-relay.mjs && node tests-browser-engine.mjs"
   },
   "devDependencies": {
     "@isomorphic-git/lightning-fs": "4.10.5",
