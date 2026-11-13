@@ -11,6 +11,7 @@ assert.equal((await workspaceSecurity(req('/api/security'),bucket,null)).status,
 assert.equal((await workspaceSecurity(req('/api/security',{action:'set',pin:'123456'},{Origin:'https://evil.test'}),bucket,user)).status,403);
 await bucket.put('accounts/'+user+'/desktop.json',JSON.stringify({files:[{id:'secret',name:'Secret.txt',content:'private data'}],prefs:{pin:'legacy-code',name:'Private name'}}));
 assert.equal((await cloudState(req('/api/state'),bucket)).status,423);
+const lockedResponse=await (await cloudState(req('/api/state'),bucket)).json();assert.equal(lockedResponse.displayName,'Private name');assert.equal(lockedResponse.state,undefined);assert.equal(lockedResponse.files,undefined);assert.equal(lockedResponse.prefs,undefined);
 const stored=JSON.parse(bucket.objects.get('accounts/'+user+'/desktop.json').value);assert.equal(stored.prefs.pin,undefined);
 assert.ok(!bucket.objects.get('accounts/'+user+'/security.json').value.includes('legacy-code'));
 let response=await call({action:'unlock',pin:'legacy-code'});assert.equal(response.status,200);const header=response.headers.get('set-cookie');assert.match(header,/HttpOnly/);assert.match(header,/Secure/);assert.match(header,/SameSite=Strict/);cookie=header.split(';')[0];

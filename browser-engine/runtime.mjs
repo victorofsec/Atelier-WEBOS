@@ -1,8 +1,9 @@
 import '/navigation.js';
 const canonical=(value,base)=>AtelierNavigation.canonical(value,location.origin,base);
-const parentOrigin='http://127.0.0.1:5173';
+const allowedParents=new Set(['http://127.0.0.1:5173','http://localhost:5173']);
+let parentOrigin=null;
 const client=crypto.randomUUID(),channel=new BroadcastChannel('atelier-http-v2');
-const post=m=>parent.postMessage({atelierBrowser:1,...m},parentOrigin,m.body instanceof ArrayBuffer?[m.body]:[]);
+const post=m=>{if(parentOrigin)parent.postMessage({atelierBrowser:1,...m},parentOrigin,m.body instanceof ArrayBuffer?[m.body]:[])};
 const status=document.querySelector('#status');let frame,controller,connected=false;
 channel.onmessage=({data:m})=>{
  if(!connected)return;
@@ -12,8 +13,10 @@ channel.onmessage=({data:m})=>{
  if(m.type==='cancel')post({type:'cancel',id:m.id});
 };
 window.addEventListener('message',async e=>{
- if(e.source!==parent||e.origin!==parentOrigin||e.data?.atelierBrowser!==1)return;
+ if(e.source!==parent||!allowedParents.has(e.origin)||e.data?.atelierBrowser!==1)return;
  const m=e.data;
+ if(!parentOrigin){if(m.type!=='init')return;parentOrigin=e.origin}
+ if(e.origin!==parentOrigin)return;
  if(m.type==='response'){channel.postMessage({...m,client});return}
  if(m.type==='init'&&!connected){connected=true;try{await start();post({type:'ready'})}catch(error){status.textContent='Browser engine could not start: '+error.message;post({type:'error',message:status.textContent})}return}
  if(!frame)return;
@@ -40,4 +43,4 @@ async function start(){
  frame.frame.addEventListener('load',()=>{let title='',url='';try{title=frame.frame.contentDocument.title}catch{}try{url=frame.url.href}catch{try{url=controller.decodeUrl(frame.frame.contentWindow.location.href)}catch{}}try{post({type:'loaded',title,url:canonical(url)})}catch{}});
  document.body.append(frame.frame);status.textContent='';
 }
-if(parent===window){status.innerHTML='<p>This is the isolated browser engine. Open the browser inside Atelier to use it.</p><p><a href="/source.zip">Source code and licenses</a></p>'}else post({type:'hello'});
+if(parent===window){status.innerHTML='<p>This is the isolated browser engine. Open the browser inside Atelier to use it.</p><p><a href="/source.zip">Source code and licenses</a></p>'}else for(const origin of allowedParents)parent.postMessage({atelierBrowser:1,type:'hello'},origin);
