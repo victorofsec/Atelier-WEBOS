@@ -1,13 +1,14 @@
-// Runs in BareMux's SharedWorker. Elect one live window for each request so
-// opening/closing a browser window never duplicates a POST or kills the transport.
+// Runs in BareMux's SharedWorker. Explicit MessagePorts avoid relying on
+// BroadcastChannel delivery across embedded browser storage partitions.
 export default class AtelierTransport {
- constructor(){if(globalThis.atelierTransportV2)return globalThis.atelierTransportV2;globalThis.atelierTransportV2=this;this.ready=true;this.cache=new Map();this.cacheBytes=0;this.inflight=new Map();this.pending=new Map();this.channel=new BroadcastChannel('atelier-http-v2');this.channel.onmessage=({data:m})=>{const p=this.pending.get(m?.id);if(!p)return;if(m.type==='offer'&&!p.client){p.client=m.client;this.channel.postMessage({type:'request',client:m.client,id:m.id,...p.request})}else if(m.type==='response'&&m.client===p.client){this.finish(m.id);m.error?p.reject(Error(m.error)):p.resolve(m.response)}}}
+ constructor(port){const existing=globalThis.atelierTransportV4;if(existing){existing.attach(port);return existing}globalThis.atelierTransportV4=this;this.ready=true;this.cache=new Map();this.cacheBytes=0;this.inflight=new Map();this.pending=new Map();this.ports=new Set();this.attach(port)}
+ attach(port){if(!port||this.ports.has(port))return;this.ports.add(port);port.onmessage=({data:m})=>{if(m?.type==='disconnect'){this.ports.delete(port);port.close();for(const [id,p]of this.pending)if(p.port===port){this.finish(id);p.reject(Error('Browser window closed.'))}return}const p=this.pending.get(m?.id);if(!p)return;if(m.type==='offer'&&!p.port){p.port=port;p.client=m.client;clearTimeout(p.bridgeTimer);port.postMessage({type:'request',client:m.client,id:m.id,...p.request})}else if(m.type==='response'&&p.port===port&&m.client===p.client){this.finish(m.id);m.error?p.reject(Error(m.error)):p.resolve(m.response)}};port.start()}
  async init(){} meta(){return {}}
- finish(id){const p=this.pending.get(id);if(!p)return;clearTimeout(p.timer);p.signal?.removeEventListener('abort',p.abort);this.pending.delete(id)}
+ finish(id){const p=this.pending.get(id);if(!p)return;clearTimeout(p.timer);clearTimeout(p.bridgeTimer);p.signal?.removeEventListener('abort',p.abort);this.pending.delete(id)}
  async networkRequest(remote,method,body,headers,signal){
   if(this.pending.size>=128)throw Error('Too many pending website requests.');
   const bytes=body?await new Response(body).arrayBuffer():null;if(bytes?.byteLength>8*1024*1024)throw Error('Uploads are limited to 8 MB.');
-  return new Promise((resolve,reject)=>{const id=crypto.randomUUID(),abort=()=>{const p=this.pending.get(id);if(!p)return;this.channel.postMessage({type:'cancel',client:p.client,id});this.finish(id);reject(Error('Website request cancelled.'))};const timer=setTimeout(abort,60000);this.pending.set(id,{resolve,reject,timer,signal,abort,request:{url:remote.href,method,headers,body:bytes}});if(signal?.aborted)return abort();signal?.addEventListener('abort',abort,{once:true});this.channel.postMessage({type:'probe',id})});
+  return new Promise((resolve,reject)=>{const id=crypto.randomUUID(),fail=message=>{const p=this.pending.get(id);if(!p)return;p.port?.postMessage({type:'cancel',client:p.client,id});this.finish(id);reject(Error(message))},abort=()=>fail('Website request cancelled.');const timer=setTimeout(()=>fail('The website took too long to respond.'),55000),bridgeTimer=setTimeout(()=>fail('Browser connection unavailable. Close and reopen the browser.'),4000);this.pending.set(id,{resolve,reject,timer,bridgeTimer,signal,abort,request:{url:remote.href,method,headers,body:bytes}});if(signal?.aborted)return abort();signal?.addEventListener('abort',abort,{once:true});for(const port of this.ports)port.postMessage({type:'probe',id})});
  }
 
  async request(remote,method,body,headers,signal){

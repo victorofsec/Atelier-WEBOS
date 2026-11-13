@@ -1,5 +1,6 @@
 importScripts('/scramjet/scramjet.all.js');
 importScripts('/navigation.js');
+importScripts('/failure.js');
 const {ScramjetServiceWorker}=$scramjetLoadWorker();
 const engine=new ScramjetServiceWorker();
 self.addEventListener('install',()=>self.skipWaiting());
@@ -11,6 +12,6 @@ self.addEventListener('fetch',event=>event.respondWith((async()=>{
   if(wrapped.origin===location.origin)return Response.redirect(location.origin+'/browse/'+encodeURIComponent(target),307);
  }
  await engine.loadConfig();
- if(engine.route(event))return engine.fetch(event);
+ if(engine.route(event))return AtelierFailure.sanitize(await engine.fetch(event));
  return fetch(event.request);
 })()));

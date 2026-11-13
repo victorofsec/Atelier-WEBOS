@@ -2,17 +2,7 @@ import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 import * as idb from 'fake-indexeddb';
-import Transport from './browser-engine/transport.mjs';
-
-// Real HTTP transport election: two live windows must send a POST only once.
-const transport=new Transport(),a=new BroadcastChannel('atelier-http-v2'),b=new BroadcastChannel('atelier-http-v2');let sent=0;
-for(const [channel,client]of [[a,'a'],[b,'b']])channel.onmessage=({data:m})=>{if(m.type==='probe')channel.postMessage({type:'offer',id:m.id,client});if(m.type==='request'&&m.client===client){sent++;assert.equal(m.method,'POST');assert.deepEqual(new Uint8Array(m.body),new Uint8Array([7,9]));channel.postMessage({type:'response',id:m.id,client,response:{status:201,statusText:'Created',headers:{},body:new Uint8Array([3,5]).buffer}})}};
-const response=await transport.request(new URL('https://example.com/'),'POST',new Uint8Array([7,9]),{});assert.equal(response.status,201);assert.equal(sent,1);
-a.close();await transport.request(new URL('https://example.com/'),'POST',new Uint8Array([7,9]),{});assert.equal(sent,2);b.close();
-const cacheWindow=new BroadcastChannel('atelier-http-v2');let gets=0;
-cacheWindow.onmessage=({data:m})=>{if(m.type==='probe')cacheWindow.postMessage({type:'offer',id:m.id,client:'cache'});if(m.type==='request'&&m.client==='cache'){gets++;cacheWindow.postMessage({type:'response',id:m.id,client:'cache',response:{status:200,statusText:'OK',headers:{'content-type':'application/javascript','cache-control':'public, max-age=300'},body:new Uint8Array([42]).buffer}})}};
-await Promise.all(Array.from({length:10},()=>transport.request(new URL('https://example.com/app.js'),'GET',null,{})));assert.equal(gets,1);const cached=await transport.request(new URL('https://example.com/app.js'),'GET',null,{});assert.equal(gets,1);structuredClone(cached.body,{transfer:[cached.body]});assert.equal((await transport.request(new URL('https://example.com/app.js'),'GET',null,{})).body.byteLength,1);await transport.request(new URL('https://example.com/app.js'),'GET',null,{cookie:'different-user'});assert.equal(gets,2);cacheWindow.close();transport.channel.close();
-console.log('PASS concurrent GET deduplication, static cache, transferable buffers and credential-key isolation');
+await import('./browser-engine/tests-transport.mjs');
 await import('./browser-engine/navigation.js');const canonical=globalThis.AtelierNavigation.canonical;let nested='https://github.com/';for(let i=0;i<6;i++)nested='https://engine.example/browse/'+encodeURIComponent(nested);assert.equal(canonical(nested,'https://engine.example'),'https://github.com/');assert.equal(canonical('https://example.com/a%2Fb','https://engine.example'),'https://example.com/a%2Fb');assert.throws(()=>canonical('https://engine.example/','https://engine.example'));console.log('PASS repeated URL encoding is unwrapped without altering remote paths');
 console.log('PASS real transport elects one window, preserves binary requests and survives window closure');
 

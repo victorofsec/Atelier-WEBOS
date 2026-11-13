@@ -159,7 +159,7 @@ run("globalThis.browserTest=openApp('browser',true);cloud.ready=false");
 
 window.open=()=>{throw Error('External browsing is forbidden')};
 await run("navigate(browserTest,'https://github.com/path')");
-check('Web pages use a separate-origin sandboxed engine',()=>{const frame=run("q(browserTest,'.browser-engine')");assert.equal(frame.src,'https://atelier-browser-engine-vicpi.bettyrossin.chatgpt.site/');assert.equal(frame.getAttribute('sandbox'),'allow-scripts allow-same-origin allow-forms allow-downloads');assert.equal(run("q(browserTest,'.browser-frame-slot').hidden"),false);assert.equal(window.location.href,'http://localhost:5173/')});
+check('Web pages use a separate-origin sandboxed engine',()=>{const frame=run("q(browserTest,'.browser-engine')");assert.equal(frame.src,'http://127.0.0.1:5174/');assert.equal(frame.getAttribute('sandbox'),'allow-scripts allow-same-origin allow-forms allow-downloads');assert.equal(run("q(browserTest,'.browser-frame-slot').hidden"),false);assert.equal(window.location.href,'http://localhost:5173/')});
 let engineMessages=[];const engineWindow=run('browserTest.state.browserFrame.contentWindow');engineWindow.postMessage=(message,origin)=>engineMessages.push({message,origin});
 window.dispatchEvent(new window.MessageEvent('message',{origin:'https://evil.example',source:engineWindow,data:{atelierBrowser:1,type:'ready'}}));
 check('Untrusted origins cannot control the browser bridge',()=>assert.equal(run('browserTest.state.browserReady'),undefined));
@@ -173,6 +173,16 @@ check('Home preserves the live engine without external navigation',()=>{assert.e
 run("files.push({id:'reader-local',name:'Local.html',type:'text',parent:'documents',content:'<h1>Local HTML</h1><script>window.pwned=true</script>'})");await run("navigate(browserTest,'atelier://file/reader-local')");
 check('Local HTML remains isolated and sanitized',()=>{assert.equal(run("q(browserTest,'.reader-document').shadowRoot.querySelector('h1').textContent"),'Local HTML');assert.equal(window.pwned,undefined)});
 await run("navigate(browserTest,'javascript:alert(1)')");assert.match(run("q(browserTest,'.reader-status').textContent"),/Only HTTP/);
+const beforeReaderFetch=window.fetch;window.TextDecoder=TextDecoder;
+const previousAbortAny=window.AbortSignal.any;window.AbortSignal.any=signals=>signals[0];
+let readerRequests=[];
+window.fetch=async(url,options)=>{assert.equal(url,'/api/browser-relay');const meta=JSON.parse(decodeURIComponent(options.headers['X-Browser-Request']));readerRequests.push(meta);const redirect=meta.url.endsWith('/start');const header=new TextEncoder().encode(JSON.stringify({status:redirect?302:200,headers:redirect?{location:'/article'}:{'content-type':'text/html'}}));const body=new TextEncoder().encode(redirect?'':'<title>Reader fixture</title><h1>Public article</h1><script>window.readerAttack=true</script><form><input name="password"></form><a href="/next">Next</a>');const packet=new Uint8Array(4+header.length+body.length);new DataView(packet.buffer).setUint32(0,header.length);packet.set(header,4);packet.set(body,4+header.length);return new Response(packet)};
+run('browserTest.state.readerMode=true');await run("navigate(browserTest,'https://example.com/start')");
+check('Reader uses the authenticated relay, follows redirects and stays inside Atelier',()=>{assert.equal(readerRequests.length,2);assert.equal(run("q(browserTest,'.web-address').value"),'https://example.com/article');assert.equal(run("q(browserTest,'.reader-document').shadowRoot.querySelector('h1').textContent"),'Public article');assert.equal(run("q(browserTest,'.browser-frame-slot').hidden"),true);assert.equal(window.location.href,'http://localhost:5173/')});
+check('Remote reader removes scripts and forms',()=>{assert.equal(window.readerAttack,undefined);assert.equal(run("q(browserTest,'.reader-document').shadowRoot.querySelector('script,form,input')"),null)});
+window.fetch=async()=>Response.json({error:'Sign in to Atelier to browse.'},{status:401});await run("navigate(browserTest,'https://example.com/private')");
+check('Reader reports authentication failure without hanging',()=>assert.match(run("q(browserTest,'.web-body').textContent"),/Sign in to Atelier/));
+window.fetch=beforeReaderFetch;window.AbortSignal.any=previousAbortAny;
 run('browserTest.cleanup()');check('Closing browser removes its transport and frame',()=>assert.equal(run('browserTest.state.browserFrame'),null));
 const originalFetch=window.fetch;window.fetch=async()=>({status:401,ok:false});
 run("cloud.busy=false;cloud.running=null;cloud.loading=null;clearTimeout(cloud.timer);cloud.guest=false;files.push({id:'private-test',name:'Secret.txt',parent:'documents',type:'text'});localOwner='previous-account'");

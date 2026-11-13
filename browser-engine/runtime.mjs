@@ -2,7 +2,7 @@ import '/navigation.js';
 const canonical=(value,base)=>AtelierNavigation.canonical(value,location.origin,base);
 const allowedParents=new Set(['http://127.0.0.1:5173','http://localhost:5173']);
 let parentOrigin=null;
-const client=crypto.randomUUID(),channel=new BroadcastChannel('atelier-http-v2');
+const client=crypto.randomUUID(),bridge=new MessageChannel(),channel=bridge.port1;
 const post=m=>{if(parentOrigin)parent.postMessage({atelierBrowser:1,...m},parentOrigin,m.body instanceof ArrayBuffer?[m.body]:[])};
 const status=document.querySelector('#status');let frame,controller,connected=false;
 channel.onmessage=({data:m})=>{
@@ -12,6 +12,8 @@ channel.onmessage=({data:m})=>{
  if(m.type==='request')post({type:'request',id:m.id,url:m.url,method:m.method,headers:m.headers,body:m.body});
  if(m.type==='cancel')post({type:'cancel',id:m.id});
 };
+channel.start();
+window.addEventListener('pagehide',()=>channel.postMessage({type:'disconnect'}));
 window.addEventListener('message',async e=>{
  if(e.source!==parent||!allowedParents.has(e.origin)||e.data?.atelierBrowser!==1)return;
  const m=e.data;
@@ -30,7 +32,8 @@ async function start(){
  controller=new ScramjetController({prefix:'/browse/',flags:{captureErrors:false,sourcemaps:false},files:{wasm:'/scramjet/scramjet.wasm.wasm',all:'/scramjet/scramjet.all.js',sync:'/scramjet/scramjet.sync.js'}});
  await controller.init();
  const connection=new BareMux.BareMuxConnection('/baremux/worker.js');
- if(await connection.getTransport()!=='/transport.mjs?v=2')await connection.setTransport('/transport.mjs?v=2',[]);
+ // Register this window even when another window already installed the transport.
+ await connection.setTransport('/transport.mjs?v=4',[bridge.port2],[bridge.port2]);
  const registration=await navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'});await registration.update();const installing=registration.installing;if(installing&&installing.state!=="activated")await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error("Browser update timed out.")),12000);installing.addEventListener("statechange",()=>{if(installing.state==="activated"){clearTimeout(timer);resolve()}else if(installing.state==="redundant"){clearTimeout(timer);reject(Error("Browser update failed."))}})});await navigator.serviceWorker.ready;
  if(!navigator.serviceWorker.controller)await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Service Worker did not take control.')),12000);navigator.serviceWorker.addEventListener('controllerchange',()=>{clearTimeout(timer);resolve()},{once:true})});
  frame=controller.createFrame();frame.frame.title='Website';frame.frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-forms allow-downloads');

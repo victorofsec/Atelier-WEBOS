@@ -1,5 +1,9 @@
 # Browser compatibility
 
+The HTTP transport now registers an explicit MessagePort for each browser window instead of broadcasting requests across worker contexts. Each request is assigned to exactly one live window; a missing bridge fails after four seconds instead of reporting a generic cancellation after one minute. Engine-generated error pages are replaced before display so they do not show deployment addresses or stack traces. The engine origin remains visible to developer tools; this is not origin anonymization.
+
+The **Reader** button provides a separate route for public HTML and text: it uses the authenticated relay directly, follows bounded redirects, then sanitizes the document inside Atelier. It does not run website scripts, accept forms, or provide account sign-in. Use **Interactive** to return to the full page engine. Neither mode guarantees access to sites with anti-bot restrictions.
+
 Atelier keeps web pages on a separate engine origin. Both sides of the message bridge must explicitly allow the desktop's actual origin. Changing the desktop domain without updating the engine breaks startup before any website request can run. The hosted engine now accepts the active custom domain and the original hosted address. The local edition accepts only its two loopback origins.
 
 ## Alternatives reviewed
